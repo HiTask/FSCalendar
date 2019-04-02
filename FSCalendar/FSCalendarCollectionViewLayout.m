@@ -55,22 +55,22 @@
         self.heights = NULL;
         self.tops = NULL;
         self.lefts = NULL;
-        
+
         self.sectionHeights = NULL;
         self.sectionTops = NULL;
         self.sectionBottoms = NULL;
         self.sectionRowCounts = NULL;
-        
+
         self.scrollDirection = UICollectionViewScrollDirectionHorizontal;
-        self.sectionInsets = UIEdgeInsetsMake(5, 0, 5, 0);
-        
+        self.sectionInsets = UIEdgeInsetsMake(0, 0, 0, 0);
+
         self.itemAttributes = [NSMutableDictionary dictionary];
         self.headerAttributes = [NSMutableDictionary dictionary];
         self.rowSeparatorAttributes = [NSMutableDictionary dictionary];
-        
+
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didReceiveNotifications:) name:UIDeviceOrientationDidChangeNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didReceiveNotifications:) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
-        
+
         [self registerClass:[FSCalendarSeparator class] forDecorationViewOfKind:kFSCalendarSeparatorInterRows];
     }
     return self;
@@ -80,12 +80,12 @@
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIDeviceOrientationDidChangeNotification object:nil];
-    
+
     free(self.widths);
     free(self.heights);
     free(self.tops);
     free(self.lefts);
-    
+
     free(self.sectionHeights);
     free(self.sectionTops);
     free(self.sectionRowCounts);
@@ -99,11 +99,11 @@
     }
     self.collectionViewSize = self.collectionView.frame.size;
     self.separators = self.calendar.appearance.separators;
-    
+
     [self.itemAttributes removeAllObjects];
     [self.headerAttributes removeAllObjects];
     [self.rowSeparatorAttributes removeAllObjects];
-    
+
     self.headerReferenceSize = ({
         CGSize headerSize = CGSizeZero;
         if (self.calendar.floatingMode) {
@@ -137,7 +137,7 @@
         CGSize size = CGSizeMake(width, height);
         size;
     });
-    
+
     // Calculate item widths and lefts
     free(self.widths);
     self.widths = ({
@@ -148,7 +148,7 @@
         FSCalendarSliceCake(contentWidth, columnCount, widths);
         widths;
     });
-    
+
     free(self.lefts);
     self.lefts = ({
         NSInteger columnCount = 7;
@@ -160,7 +160,7 @@
         }
         lefts;
     });
-    
+
     // Calculate item heights and tops
     free(self.heights);
     self.heights = ({
@@ -177,7 +177,7 @@
         }
         heights;
     });
-    
+
     free(self.tops);
     self.tops = ({
         NSInteger rowCount = self.calendar.transitionCoordinator.representingScope == FSCalendarScopeWeek ? 1 : 6;
@@ -189,7 +189,7 @@
         }
         tops;
     });
-    
+
     // Calculate content size
     self.numberOfSections = self.collectionView.numberOfSections;
     self.contentSize = ({
@@ -241,7 +241,7 @@
         }
         contentSize;
     });
-    
+
     [self.calendar adjustMonthPosition];
 }
 
@@ -255,15 +255,15 @@
     // Clipping
     rect = CGRectIntersection(rect, CGRectMake(0, 0, self.contentSize.width, self.contentSize.height));
     if (CGRectIsEmpty(rect)) return nil;
-    
+
     // Calculating attributes
     NSMutableArray<UICollectionViewLayoutAttributes *> *layoutAttributes = [NSMutableArray array];
-    
+
     if (!self.calendar.floatingMode) {
-        
+
         switch (self.scrollDirection) {
             case UICollectionViewScrollDirectionHorizontal: {
-                
+
                 NSInteger startColumn = ({
                     NSInteger startSection = rect.origin.x/self.collectionView.fs_width;
                     CGFloat widthDelta = FSCalendarMod(CGRectGetMinX(rect), self.collectionView.fs_width)-self.sectionInsets.left;
@@ -272,7 +272,7 @@
                     NSInteger startColumn = startSection*7 + countDelta;
                     startColumn;
                 });
-                
+
                 NSInteger endColumn = ({
                     NSInteger endColumn;
                     CGFloat section = CGRectGetMaxX(rect)/self.collectionView.fs_width;
@@ -288,9 +288,9 @@
                     }
                     endColumn;
                 });
-                
+
                 NSInteger numberOfRows = self.calendar.transitionCoordinator.representingScope == FSCalendarScopeMonth ? 6 : 1;
-                
+
                 for (NSInteger column = startColumn; column <= endColumn; column++) {
                     for (NSInteger row = 0; row < numberOfRows; row++) {
                         NSInteger section = column / 7;
@@ -298,18 +298,18 @@
                         NSIndexPath *indexPath = [NSIndexPath indexPathForItem:item inSection:section];
                         UICollectionViewLayoutAttributes *itemAttributes = [self layoutAttributesForItemAtIndexPath:indexPath];
                         [layoutAttributes addObject:itemAttributes];
-                        
+
                         UICollectionViewLayoutAttributes *rowSeparatorAttributes = [self layoutAttributesForDecorationViewOfKind:kFSCalendarSeparatorInterRows atIndexPath:indexPath];
                         if (rowSeparatorAttributes) {
                             [layoutAttributes addObject:rowSeparatorAttributes];
                         }
                     }
                 }
-                
+
                 break;
             }
             case UICollectionViewScrollDirectionVertical: {
-                
+
                 NSInteger startRow = ({
                     NSInteger startSection = rect.origin.y/self.collectionView.fs_height;
                     CGFloat heightDelta = FSCalendarMod(CGRectGetMinY(rect), self.collectionView.fs_height)-self.sectionInsets.top;
@@ -318,7 +318,7 @@
                     NSInteger startRow = startSection*6 + countDelta;
                     startRow;
                 });
-                
+
                 NSInteger endRow = ({
                     NSInteger endRow;
                     CGFloat section = CGRectGetMaxY(rect)/self.collectionView.fs_height;
@@ -334,7 +334,7 @@
                     }
                     endRow;
                 });
-                
+
                 for (NSInteger row = startRow; row <= endRow; row++) {
                     for (NSInteger column = 0; column < 7; column++) {
                         NSInteger section = row / 6;
@@ -342,23 +342,23 @@
                         NSIndexPath *indexPath = [NSIndexPath indexPathForItem:item inSection:section];
                         UICollectionViewLayoutAttributes *itemAttributes = [self layoutAttributesForItemAtIndexPath:indexPath];
                         [layoutAttributes addObject:itemAttributes];
-                        
+
                         UICollectionViewLayoutAttributes *rowSeparatorAttributes = [self layoutAttributesForDecorationViewOfKind:kFSCalendarSeparatorInterRows atIndexPath:indexPath];
                         if (rowSeparatorAttributes) {
                             [layoutAttributes addObject:rowSeparatorAttributes];
                         }
-                        
+
                     }
                 }
-                
+
                 break;
             }
             default:
                 break;
         }
-        
+
     } else {
-        
+
         NSInteger startSection = [self searchStartSection:rect :0 :self.numberOfSections-1];
         NSInteger startRowIndex = ({
             CGFloat heightDelta1 = MIN(self.sectionBottoms[startSection]-CGRectGetMinY(rect)-self.sectionInsets.bottom, self.sectionRowCounts[startSection]*self.estimatedItemSize.height);
@@ -366,7 +366,7 @@
             NSInteger startRowIndex = self.sectionRowCounts[startSection]-startRowCount;
             startRowIndex;
         });
-        
+
         NSInteger endSection = [self searchEndSection:rect :startSection :self.numberOfSections-1];
         NSInteger endRowIndex = ({
             CGFloat heightDelta2 = MAX(CGRectGetMaxY(rect) - self.sectionTops[endSection]- self.headerReferenceSize.height - self.sectionInsets.top, 0);
@@ -392,10 +392,10 @@
                 }
             }
         }
-        
+
     }
     return [NSArray arrayWithArray:layoutAttributes];
-    
+
 }
 
 // Items
@@ -556,5 +556,3 @@
 
 #undef kFSCalendarSeparatorInterColumns
 #undef kFSCalendarSeparatorInterRows
-
-
